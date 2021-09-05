@@ -75,9 +75,12 @@ def encode_multipart_formdata(fields, boundary=None):
     if boundary is None:
         boundary = choose_boundary()
 
+    # 这里把tuple转成RequestField
     for field in iter_field_objects(fields):
         body.write(b("--%s\r\n" % (boundary)))
 
+        # WHY debug writer就会崩溃，为什么？
+        # render_headers会整合header信息，把sort_key的header放在前面
         writer(body).write(field.render_headers())
         data = field.data
 

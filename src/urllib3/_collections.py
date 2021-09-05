@@ -42,6 +42,7 @@ class RecentlyUsedContainer(MutableMapping):
         ``dispose_func(value)`` is called.  Callback which will get called
     """
 
+    # Answer 为什么加这行，不直接OrderedDict？可能为了易于改变其底层实现
     ContainerCls = OrderedDict
 
     def __init__(self, maxsize=10, dispose_func=None):
@@ -49,6 +50,7 @@ class RecentlyUsedContainer(MutableMapping):
         self.dispose_func = dispose_func
 
         self._container = self.ContainerCls()
+        # reentrant lock，不是readlock
         self.lock = RLock()
 
     def __getitem__(self, key):
@@ -155,6 +157,7 @@ class HTTPHeaderDict(MutableMapping):
 
     def __getitem__(self, key):
         val = self._container[key.lower()]
+        # val[0]是key，value从val[1]开始
         return ", ".join(val[1:])
 
     def __delitem__(self, key):

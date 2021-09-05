@@ -84,6 +84,7 @@ class TestResponse(object):
 
         r = HTTPResponse(fp, preload_content=True)
 
+        # tell返回current stream position。preload为true，就会读取完foo，fp的位置就会到3
         assert fp.tell() == len(b"foo")
         assert r.data == b"foo"
 
@@ -134,6 +135,7 @@ class TestResponse(object):
             fp, headers={"content-encoding": "deflate"}, preload_content=False
         )
 
+        # GOOD 这个3的取值是根据压缩的情况，并不是随便取值的
         assert r.read(3) == b""
         # Buffer in case we need to switch to the raw stream
         assert r._decoder._data is not None
@@ -145,8 +147,11 @@ class TestResponse(object):
         assert r.read() == b""
 
     def test_chunked_decoding_deflate2(self):
+        # 最后一个zlib.MAX_WBITS决定了history buffer的大小，最后的输出值是不是有header和trailing checksum
         compress = zlib.compressobj(6, zlib.DEFLATED, -zlib.MAX_WBITS)
+        # WHY 执行完这一句，data是空的
         data = compress.compress(b"foo")
+        # WHY 执行完这一句data才有内容
         data += compress.flush()
 
         fp = BytesIO(data)
@@ -154,11 +159,14 @@ class TestResponse(object):
             fp, headers={"content-encoding": "deflate"}, preload_content=False
         )
 
+        # header
         assert r.read(1) == b""
+        # WHY
         assert r.read(1) == b"f"
         # Once we've decoded data, we just stream to the decoder; no buffering
         assert r._decoder._data is None
         assert r.read(2) == b"oo"
+        # trailing checksum
         assert r.read() == b""
         assert r.read() == b""
 

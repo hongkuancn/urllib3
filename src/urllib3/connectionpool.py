@@ -385,6 +385,7 @@ class HTTPConnectionPool(ConnectionPool, RequestMethods):
             self._raise_timeout(err=e, url=url, timeout_value=conn.timeout)
             raise
 
+        # conn.request() 调用了 http.client.*.request
         # conn.request() calls http.client.*.request, not the method in
         # urllib3.request. It also calls makefile (recv) on the socket.
         try:
@@ -413,6 +414,7 @@ class HTTPConnectionPool(ConnectionPool, RequestMethods):
         # Reset the timeout for the recv() on the socket
         read_timeout = timeout_obj.read_timeout
 
+        # WHY app engine扮演了怎样的角色
         # App Engine doesn't have a sock attr
         if getattr(conn, "sock", None):
             # In Python 3 socket.py will catch EAGAIN and return None when you
@@ -490,7 +492,7 @@ class HTTPConnectionPool(ConnectionPool, RequestMethods):
                 conn = old_pool.get(block=False)
                 if conn:
                     conn.close()
-
+        # 有意思的写法
         except queue.Empty:
             pass  # Done.
 
@@ -796,6 +798,7 @@ class HTTPConnectionPool(ConnectionPool, RequestMethods):
                 **response_kw
             )
 
+        # GOOD requests把redirects设置成False，没有用urllib3来处理redirect
         # Handle redirect?
         redirect_location = redirect and response.get_redirect_location()
         if redirect_location:
@@ -862,6 +865,7 @@ class HTTPConnectionPool(ConnectionPool, RequestMethods):
         return response
 
 
+# HTTPSConnectionPool继承了HTTPConnectionPool
 class HTTPSConnectionPool(HTTPConnectionPool):
     """
     Same as :class:`.HTTPConnectionPool`, but HTTPS.

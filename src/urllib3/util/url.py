@@ -88,6 +88,7 @@ class Url(namedtuple("Url", url_attrs)):
 
     __slots__ = ()
 
+    # WHY __new__
     def __new__(
         cls,
         scheme=None,

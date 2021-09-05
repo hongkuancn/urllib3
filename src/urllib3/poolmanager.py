@@ -69,6 +69,7 @@ _key_fields = (
 
 #: The namedtuple class used to construct keys for the connection pool.
 #: All custom key schemes should include the fields in this key at a minimum.
+# namedtuple是一种简化的使用object的方法，意味着PoolKey中有_key_fields这些属性。比较pythonic。
 PoolKey = collections.namedtuple("PoolKey", _key_fields)
 
 _proxy_config_fields = ("ssl_context", "use_forwarding_for_https")
@@ -170,6 +171,7 @@ class PoolManager(RequestMethods):
     def __init__(self, num_pools=10, headers=None, **connection_pool_kw):
         RequestMethods.__init__(self, headers)
         self.connection_pool_kw = connection_pool_kw
+        # 调用Container的clear方法，之后执行dispose_func，关闭pool
         self.pools = RecentlyUsedContainer(num_pools, dispose_func=lambda p: p.close())
 
         # Locally set the pool classes and keys so other PoolManagers can
@@ -255,6 +257,7 @@ class PoolManager(RequestMethods):
         pool_key_constructor = self.key_fn_by_scheme.get(scheme)
         if not pool_key_constructor:
             raise URLSchemeUnknown(scheme)
+        # 这里相当于调用了_default_key_normalizer方法，传入第二个参数，第一个参数是PoolKey
         pool_key = pool_key_constructor(request_context)
 
         return self.connection_from_pool_key(pool_key, request_context=request_context)

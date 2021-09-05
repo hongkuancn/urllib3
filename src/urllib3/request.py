@@ -65,6 +65,8 @@ class RequestMethods(object):
         option to drop down to more specific methods when necessary, such as
         :meth:`request_encode_url`, :meth:`request_encode_body`,
         or even the lowest level :meth:`urlopen`.
+
+        这是个convenience method
         """
         method = method.upper()
 

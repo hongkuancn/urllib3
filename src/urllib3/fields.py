@@ -179,6 +179,7 @@ class RequestField(object):
                 filename, data, content_type = value
             else:
                 filename, data = value
+                # 猜测文件类型
                 content_type = guess_content_type(filename)
         else:
             filename = None

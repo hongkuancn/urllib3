@@ -72,6 +72,7 @@ class TestMultipartEncoding(object):
 
         assert content_type == "multipart/form-data; boundary=" + str(BOUNDARY)
 
+    # 请求body中判断出是text格式，但是请求的content-type仍然是multipart/form-data
     def test_textplain(self):
         fields = [("k", ("somefile.txt", b"v"))]
 

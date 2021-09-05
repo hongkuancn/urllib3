@@ -273,6 +273,7 @@ class TestPoolManager(object):
         """Assert it is possible to define a custom key function."""
         p = PoolManager(10)
 
+        # 替换了key_fn，只要key相等，就会用同一个Connection
         p.key_fn_by_scheme["http"] = lambda x: tuple(x["key"])
         pool1 = p.connection_from_url(
             "http://example.com", pool_kwargs={"key": "value"}
