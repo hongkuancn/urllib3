@@ -43,6 +43,7 @@ class TestRetry(object):
         """Total can win if it's lower than the connect value"""
         error = ConnectTimeoutError()
         retry = Retry(connect=3, total=2)
+        # connect减2，total也减2
         retry = retry.increment(error=error)
         retry = retry.increment(error=error)
         with pytest.raises(MaxRetryError) as e:
@@ -320,6 +321,7 @@ class TestRetry(object):
         new_retry = retry.new()
         assert new_retry.respect_retry_after_header == respect_retry_after_header
 
+    # WHY 没理解
     @pytest.mark.freeze_time("2019-06-03 11:00:00", tz_offset=0)
     @pytest.mark.parametrize(
         "retry_after_header,respect_retry_after_header,sleep_duration",

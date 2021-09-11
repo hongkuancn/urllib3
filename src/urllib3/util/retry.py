@@ -209,6 +209,7 @@ class Retry(object):
     """
 
     #: Default methods to be used for ``allowed_methods``
+    # 幂等操作才可以retry
     DEFAULT_ALLOWED_METHODS = frozenset(
         ["HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"]
     )
@@ -337,6 +338,8 @@ class Retry(object):
         """Formula for computing the current backoff
 
         :rtype: float
+
+        睡眠时间
         """
         # We want to consider only the last consecutive errors sequence (Ignore redirects).
         consecutive_errors_len = len(
@@ -347,6 +350,7 @@ class Retry(object):
         if consecutive_errors_len <= 1:
             return 0
 
+        # 根据错误长度，呈指数增长
         backoff_value = self.backoff_factor * (2 ** (consecutive_errors_len - 1))
         return min(self.BACKOFF_MAX, backoff_value)
 

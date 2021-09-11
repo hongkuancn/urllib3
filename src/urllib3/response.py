@@ -154,6 +154,7 @@ def _get_decoder(mode):
     return DeflateDecoder()
 
 
+# response继承了IO流
 class HTTPResponse(io.IOBase):
     """
     HTTP Response container.
@@ -573,6 +574,7 @@ class HTTPResponse(io.IOBase):
                 yield line
         else:
             while not is_fp_closed(self._fp):
+                # 这个read内容很丰富
                 data = self.read(amt=amt, decode_content=decode_content)
 
                 if data:

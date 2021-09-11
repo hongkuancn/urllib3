@@ -221,6 +221,7 @@ class TestResponse(object):
             if r.closed:
                 break
 
+        # Answer 不是4个foo？因为前三个是压缩的，第四个不是，是错误的，就没有读取出来
         assert ret == b"foofoofoo"
 
     def test_chunked_decoding_gzip_swallow_garbage(self):
@@ -270,6 +271,7 @@ class TestResponse(object):
 
         assert r.data == b"foo"
 
+    # 两重压缩
     def test_multi_decoding_deflate_gzip(self):
         compress = zlib.compressobj(6, zlib.DEFLATED, 16 + zlib.MAX_WBITS)
         data = compress.compress(zlib.compress(b"foo"))
@@ -377,7 +379,9 @@ class TestResponse(object):
         resp = HTTPResponse(fp, preload_content=False)
         br = BufferedReader(resp, 5)
 
+        # GOOD 只有执行了这句，才会将fp消耗5个bytes
         br.read(1)  # sets up the buffer, reading 5
+        # 读了buffer的内容，fp就是5个之后
         assert len(fp.read()) == (len(b) - 5)
 
         # This is necessary to make sure the "no bytes left" part of `readinto`
@@ -464,6 +468,7 @@ class TestResponse(object):
     def test_streaming_tell(self):
         fp = BytesIO(b"foo")
         resp = HTTPResponse(fp, preload_content=False)
+        # 每个next走2 bytes
         stream = resp.stream(2, decode_content=False)
 
         position = 0
@@ -472,6 +477,7 @@ class TestResponse(object):
         assert 2 == position
         assert position == resp.tell()
 
+        # 只剩下1 bytes，所以走1步
         position += len(next(stream))
         assert 3 == position
         assert position == resp.tell()
@@ -490,6 +496,7 @@ class TestResponse(object):
         )
         stream = resp.stream(2)
 
+        # 有1 byte 的header
         assert next(stream) == b"f"
         assert next(stream) == b"oo"
         with pytest.raises(StopIteration):
@@ -578,6 +585,7 @@ class TestResponse(object):
         )
         stream = resp.stream(2)
 
+        # 虽然HTTPResponse继承了IO流，但是next是施加在stream，不是直接response
         assert next(stream) == b"f"
         assert next(stream) == b"oo"
         with pytest.raises(StopIteration):
@@ -918,6 +926,7 @@ class TestResponse(object):
     )
     def test__iter__(self, payload, expected_stream):
         actual_stream = []
+        # __iter__方法按照换行分割
         for chunk in HTTPResponse(BytesIO(payload), preload_content=False):
             actual_stream.append(chunk)
 
